@@ -15,8 +15,16 @@
     "@nuxt/ui": "3.2.0",
     "eslint": "^9.0.0",
     "nuxt": "^3.17.6",
+    "tailwindcss": "^4.1.11",
     "typescript": "^5.6.3",
     "vue": "^3.5.17",
     "vue-router": "^4.5.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.1.11",
+    "@tailwindcss/vite": "^4.1.11",
+    "eslint-config-prettier": "^10.1.5",
+    "eslint-plugin-prettier": "^5.5.1",
+    "prettier": "^3.6.2"
   }
 }
