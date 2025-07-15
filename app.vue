@@ -10,7 +10,7 @@ const doubleCount = computed(() => count.value * 2);
       <h1>Hello World</h1>
       <p>Count: {{ count }}</p>
       <p>Double Count: {{ doubleCount }}</p>
-      <button class="bg-blue-500 text-white p-2 rounded-md" @click="count++">Increment</button>
+      <button class="bg-blue-500 box-border text-white p-2 rounded-md" @click="count++">Increment</button>
     </div>
     <div>
       <div class="flex gap-4 bg-gray-100 p-4 rounded-md">
