@@ -1,55 +1,47 @@
-import { BehaviorSubject, finalize, switchMap, tap } from 'rxjs';
+import { BehaviorSubject, catchError, finalize, of, switchMap, tap } from 'rxjs';
 import type { Observable } from 'rxjs';
 
-export function useRxFetch<T>(getter: () => Observable<T>): {
-  data: Ref<T | undefined>;
-  error: Ref<Error | null>;
-  loading: Ref<boolean>;
-  refetch: () => void;
-};
-
-export function useRxFetch<T>(
-  getter: () => Observable<T>,
-  defaultValue: T,
-): {
+export interface IRxFetchResult<T> {
   data: Ref<T>;
-  error: Ref<Error | null>;
   loading: Ref<boolean>;
+  error: Ref<Error | null>;
   refetch: () => void;
-};
+}
+
+export function useRxFetch<T>(getter: () => Observable<T>): IRxFetchResult<T>;
+export function useRxFetch<T>(getter: () => Observable<T>, defaultValue: T): IRxFetchResult<T | undefined>;
 
 export function useRxFetch<T>(getter: () => Observable<T>, defaultValue?: T) {
-  const data = ref(defaultValue ?? undefined);
-  const error = ref<Error | null>(null);
   const loading = ref(false);
+  const error = ref<Error | null>(null);
+  const data = ref(defaultValue ?? undefined);
+  const handleRefetch = () => subject.next(void 0);
   const subject = new BehaviorSubject<void>(void 0);
 
   const subscription = subject
     .pipe(
-      tap(() => {
-        loading.value = true;
-      }),
-      switchMap(() => getter().pipe(finalize(() => (loading.value = false)))),
+      tap(() => (loading.value = true)),
+      switchMap(() =>
+        getter().pipe(
+          finalize(() => (loading.value = false)),
+          tap((value) => {
+            data.value = value;
+          }),
+          catchError((err) => {
+            if (err instanceof Error) {
+              error.value = err;
+            } else if (isErrorResult(err)) {
+              error.value = err.error;
+            } else {
+              error.value = new Error(String(err));
+            }
+            return of(null);
+          }),
+        ),
+      ),
     )
-    .subscribe({
-      next: (value) => {
-        data.value = value;
-      },
-      error: (err) => {
-        error.value = err;
-      },
-      complete: () => {
-        loading.value = false;
-      },
-    });
+    .subscribe();
+  onUnmounted(() => subscription.unsubscribe());
 
-  onUnmounted(() => {
-    subscription.unsubscribe();
-  });
-
-  const refetch = () => {
-    subject.next(void 0);
-  };
-
-  return { data, error, loading, refetch };
+  return { data, error, loading, refetch: handleRefetch };
 }

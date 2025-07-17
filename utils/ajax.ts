@@ -1,14 +1,41 @@
 import { ajax } from 'rxjs/ajax';
 import type { AjaxConfig } from 'rxjs/ajax';
-import { catchError, map, switchMap, timeout } from 'rxjs/operators';
-import { of, throwError } from 'rxjs';
-import type { Observable } from 'rxjs';
+import {
+  catchError,
+  map,
+  shareReplay,
+  switchMap,
+  take,
+  timeout,
+  firstValueFrom,
+  of,
+  throwError,
+  Observable,
+} from 'rxjs';
+import { isSuccessResponse } from './typeGuards';
+
+export const toast$ = new Observable<ReturnType<typeof useToast>>((observer) => {
+  const scope = effectScope(true);
+
+  scope.run(() => {
+    const toast = useToast();
+    observer.next(toast);
+  });
+
+  return () => scope.stop();
+}).pipe(shareReplay(1));
 
 export const handleError = (err: Error): Observable<IErrorResult<Error>> => {
-  if (err instanceof Error) {
+  if (err instanceof HttpError) {
+    toast$.pipe(take(1)).subscribe((toast) => {
+      toast.add({ title: err.response.msg ?? 'Unknown error', color: 'error' });
+    });
+    return of({ handled: true, error: err });
+  } else if (err instanceof Error) {
     return of({ handled: false, error: err });
+  } else {
+    return of({ handled: false, error: new Error(String(err)) });
   }
-  return of({ handled: true, error: new Error(String(err)) });
 };
 
 function getAccessToken() {
@@ -32,16 +59,44 @@ export interface HttpOptions extends AjaxConfig {
   timeoutMs?: number;
 }
 
-export function http$<T = unknown>(urlOrOptions: string | HttpOptions): Observable<T> {
+export function http<T>(urlOrOptions: string | HttpOptions): Promise<T>;
+export function http<T, R>(
+  urlOrOptions: string | HttpOptions,
+  chain: (stream: Observable<T>) => Observable<R>,
+): Promise<R>;
+
+export function http<T, R>(
+  urlOrOptions: string | HttpOptions,
+  chain?: (stream: Observable<T>) => Observable<R>,
+): Promise<R> {
+  const stream$ = http$<T>(urlOrOptions);
+  return firstValueFrom(chain ? chain(stream$) : (stream$ as unknown as Observable<R>));
+}
+
+export function http$<T>(urlOrOptions: string | HttpOptions): Observable<T> {
   const options = typeof urlOrOptions === 'string' ? { url: urlOrOptions } : urlOrOptions;
   const { auth = true, timeoutMs = 15000, headers = {}, ...rest } = options;
 
   const headers$ = auth ? getAccessToken().pipe(map((token) => ({ Authorization: `Bearer ${token}` }))) : of({});
   return headers$.pipe(
-    map((upriver) => ({ ...headers, ...upriver, 'Content-Type': headers['Content-Type'] || 'application/json' })),
+    map((stream) => ({ ...headers, ...stream, 'Content-Type': headers['Content-Type'] || 'application/json' })),
     switchMap((headers) => ajax({ ...rest, headers })),
     timeout(timeoutMs),
-    map((res) => res.response as T),
+    map((res) => {
+      const response = res.response as TResponse<T>;
+      if (isSuccessResponse(response)) {
+        return response.data;
+      } else {
+        throw new HttpError(response);
+      }
+    }),
     catchError((err) => handleError(err).pipe(switchMap((res) => throwError(() => res)))),
   );
+}
+
+export class HttpError extends Error {
+  constructor(public readonly response: IErrorResponse) {
+    super(response.msg);
+    this.name = 'HttpError';
+  }
 }

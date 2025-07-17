@@ -4,7 +4,8 @@
   "type": "module",
   "scripts": {
     "build": "nuxt build",
-    "dev": "nuxt dev",
+    "dev": "nuxt dev --inspect --port 3001",
+    "dev:debug": "node --inspect --enable-source-maps node_modules/.bin/nuxt dev --port 3001",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare"
@@ -13,6 +14,7 @@
     "@nuxt/eslint": "1.5.2",
     "@nuxt/image": "1.10.0",
     "@nuxt/ui": "3.2.0",
+    "@tanstack/vue-query": "^5.83.0",
     "eslint": "^9.0.0",
     "nuxt": "^3.17.6",
     "rxjs": "^7.8.2",
