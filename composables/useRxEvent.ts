@@ -3,7 +3,8 @@ import type { Observable } from 'rxjs';
 
 export function useRxEvent<T = Event, R = unknown>(
   fn: (event: T) => Observable<R>,
-  tipFn?: string | ((args: R | string) => string),
+  title: string,
+  tipOrFn?: string | ((args: R) => string),
 ) {
   const pending = ref(false);
   const subject = new Subject<T>();
@@ -17,23 +18,23 @@ export function useRxEvent<T = Event, R = unknown>(
         fn(event).pipe(
           finalize(() => (pending.value = false)),
           tap((value) => {
-            let title = 'Success';
-            if (typeof tipFn === 'string') {
-              title = tipFn;
-            } else if (typeof tipFn === 'function') {
-              title = tipFn(value ?? title);
-            } else {
-              title = value?.toString() ?? title;
+            let description: string | undefined = undefined;
+            if (typeof tipOrFn === 'string') {
+              description = tipOrFn;
+            } else if (typeof tipOrFn === 'function') {
+              description = tipOrFn(value);
             }
-            toast.add({ title, color: 'success' });
+            toast.add({ title, description, color: 'success' });
           }),
           catchError((err) => {
             if (isErrorResult(err)) {
-              // do nothing
+              if (!err.handled) {
+                toast.add({ title, description: err.error.message, color: 'error' });
+              }
             } else if (err instanceof Error) {
-              toast.add({ title: err.message, color: 'error' });
+              toast.add({ title, description: err.message, color: 'error' });
             } else {
-              toast.add({ title: 'Unknown error', color: 'error' });
+              toast.add({ title, description: 'Unknown error', color: 'error' });
             }
             return of(null);
           }),
@@ -43,5 +44,5 @@ export function useRxEvent<T = Event, R = unknown>(
     .subscribe();
   onUnmounted(() => subscription.unsubscribe());
 
-  return { mutation: handleMutation, pending };
+  return [handleMutation, pending] as const;
 }

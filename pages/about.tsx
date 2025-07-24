@@ -1,28 +1,20 @@
 import { ClientOnly, UButton } from '#components';
-import { map } from 'rxjs';
+import { ServiceLocator } from '~/composables/container';
+import { IHelloService } from '~/sections/client/hello';
 
 export default defineComponent({
   name: 'AboutPage',
   async setup() {
-    const { data, error, loading, refetch } = useRxFetch(
-      () => http$<{ hello: string }>('/api/hello').pipe(map((res) => res.hello)),
-      'Hello (not initialized)',
-    );
+    const service = ServiceLocator.default.get(IHelloService);
+
+    const helloRef = useRxRef(service.$hello, service.hello);
+    const [loadingRef, refetch] = useRxFetch(() => service.load(), 'Load Data');
+    const [mutation, pendingRef] = useRxEvent(() => service.update(helloRef.value), 'Update Data', 'Updated');
 
     const handleRefetch = () => {
-      data.value = 'Hello (refetching)';
+      service.set('Hello (refetching)');
       refetch();
     };
-
-    const { mutation, pending } = useRxEvent(
-      () =>
-        http$<{ hello: string }>({ url: '/api/hello', method: 'POST', body: { hello: data.value } }).pipe(
-          map((res) => {
-            data.value = res.hello;
-          }),
-        ),
-      'Updated',
-    );
 
     return () => (
       <div class="p-4 w-[50vw] mx-auto flex flex-col gap-4">
@@ -32,12 +24,11 @@ export default defineComponent({
         </UButton>
         <ClientOnly>
           <div class="flex flex-row gap-2 items-center">
-            {error.value ? <p>Error: {error.value.message}</p> : <p>NoError</p>}
-            {loading.value ? <p>Loading...</p> : <p>Loaded</p>}
-            {pending.value ? <p>Updating...</p> : <p>Updated</p>}
+            {loadingRef.value ? <p>Loading...</p> : <p>Loaded</p>}
+            {pendingRef.value ? <p>Updating...</p> : <p>Updated</p>}
           </div>
         </ClientOnly>
-        <input type="text" v-model={data.value} />
+        <input type="text" v-model={helloRef.value} />
         <UButton color="primary" onClick={mutation}>
           Update
         </UButton>
