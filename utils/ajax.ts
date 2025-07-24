@@ -11,6 +11,7 @@ import {
   of,
   throwError,
   Observable,
+  TimeoutError,
 } from 'rxjs';
 import { isSuccessResponse } from './typeGuards';
 
@@ -26,7 +27,12 @@ export const toast$ = new Observable<ReturnType<typeof useToast>>((observer) => 
 }).pipe(shareReplay(1));
 
 export const handleError = (err: Error): Observable<IErrorResult<Error>> => {
-  if (err instanceof HttpError) {
+  if (err instanceof TimeoutError) {
+    toast$.pipe(take(1)).subscribe((toast) => {
+      toast.add({ title: 'Request time exceeded expectations', color: 'error' });
+    });
+    return of({ handled: true, error: err });
+  } else if (err instanceof HttpError) {
     toast$.pipe(take(1)).subscribe((toast) => {
       toast.add({ title: err.response.msg ?? 'Unknown error', color: 'error' });
     });
