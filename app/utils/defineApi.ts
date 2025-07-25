@@ -1,4 +1,3 @@
-// server/utils/wrap-api-handler.ts
 import type { H3Event } from 'h3';
 import { defineEventHandler } from 'h3';
 import { isErrorResponse, isSuccessResponse } from './typeGuards';

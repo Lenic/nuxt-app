@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 export function isSuccessResponse(response: any): response is ISuccessResponse {
   return response.code === 0 && 'data' in response;
 }
