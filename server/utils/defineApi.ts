@@ -1,8 +1,8 @@
 import type { H3Event } from 'h3';
-import { defineEventHandler } from 'h3';
-import { isErrorResponse, isSuccessResponse } from './typeGuards';
-import { catchError, firstValueFrom, map, of } from 'rxjs';
 import type { Observable } from 'rxjs';
+
+import { catchError, firstValueFrom, map, of } from 'rxjs';
+import { defineEventHandler, isErrorResponse, isSuccessResponse } from '#imports';
 
 export function defineApi<T>(handler: (event: H3Event) => Promise<T | TResponse<T>> | Observable<T | TResponse<T>>) {
   function handleResponse(response: T | TResponse<T>) {

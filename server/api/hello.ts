@@ -1,6 +1,6 @@
 import { delay, from, map, of, timer } from 'rxjs';
 import { z } from 'zod';
-import { defineApi } from '~/utils/defineApi';
+import { defineApi, readBody } from '#imports';
 
 const helloSchema = z.object({
   hello: z.string(),

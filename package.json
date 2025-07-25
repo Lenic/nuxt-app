@@ -4,8 +4,8 @@
   "type": "module",
   "scripts": {
     "build": "nuxt build",
-    "dev": "nuxt dev --inspect --port 3001",
-    "dev:debug": "node --inspect --enable-source-maps node_modules/.bin/nuxt dev --port 3001",
+    "dev": "nuxt dev --port 3001",
+    "dev:inspect": "nuxt dev --inspect --port 3001",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare"
