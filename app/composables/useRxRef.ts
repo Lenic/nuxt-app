@@ -1,3 +1,5 @@
+import { onUnmounted, ref } from '#imports';
+import type { Ref } from '#imports';
 import type { Observable } from 'rxjs';
 
 export function useRxRef<T>(
@@ -19,10 +21,7 @@ export function useRxRef<T>(
       valueRef.value = value;
     }
   });
-
-  onUnmounted(() => {
-    subscription.unsubscribe();
-  });
+  onUnmounted(() => subscription.unsubscribe());
 
   return valueRef;
 }

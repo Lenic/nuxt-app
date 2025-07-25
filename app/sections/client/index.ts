@@ -1,1 +1,6 @@
-export * from './register';
+import { register } from '@/composables/container';
+import { HelloService, IHelloService } from './hello';
+
+export function registerClient() {
+  register(IHelloService, HelloService);
+}

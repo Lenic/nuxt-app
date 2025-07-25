@@ -5,7 +5,7 @@ import { defineComponent, useRxRef, useRxFetch, useRxEvent } from '#imports';
 
 export default defineComponent({
   name: 'AboutPage',
-  async setup() {
+  setup() {
     const service = ServiceLocator.default.get(IHelloService);
 
     const helloRef = useRxRef(service.$hello, service.hello);
