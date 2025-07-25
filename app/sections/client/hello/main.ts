@@ -2,6 +2,7 @@ import { Disposable } from '~/composables/container';
 import type { IHelloService } from './types';
 import { BehaviorSubject, map, tap } from 'rxjs';
 import type { Observable } from 'rxjs';
+import { http$ } from '#imports';
 
 export class HelloService extends Disposable implements IHelloService {
   private _hello = '';

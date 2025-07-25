@@ -1,6 +1,7 @@
+import { ServiceLocator } from '@/composables/container';
+import { IHelloService } from '@/sections/client/hello';
 import { ClientOnly, UButton } from '#components';
-import { ServiceLocator } from '~/composables/container';
-import { IHelloService } from '~/sections/client/hello';
+import { defineComponent, useRxRef, useRxFetch, useRxEvent } from '#imports';
 
 export default defineComponent({
   name: 'AboutPage',

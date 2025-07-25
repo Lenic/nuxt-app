@@ -1,5 +1,6 @@
+import { defineComponent } from 'vue';
+import { ContainerRegister } from '@/sections/client';
 import { NuxtPage, NuxtRouteAnnouncer, UApp } from '#components';
-import { ContainerRegister } from './sections/client';
 
 export default defineComponent({
   name: 'App',

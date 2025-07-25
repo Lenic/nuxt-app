@@ -14,6 +14,7 @@ import {
   TimeoutError,
 } from 'rxjs';
 import { isSuccessResponse } from './typeGuards';
+import { useToast, effectScope } from '#imports';
 
 export const toast$ = new Observable<ReturnType<typeof useToast>>((observer) => {
   const scope = effectScope(true);
