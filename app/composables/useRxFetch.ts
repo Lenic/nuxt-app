@@ -1,7 +1,7 @@
 import type { Ref } from '#imports';
-import { isErrorResult, onUnmounted, ref, useToast } from '#imports';
+import { isErrorResult, onMounted, onUnmounted, useState, useToast } from '#imports';
 import { BehaviorSubject, catchError, finalize, of, switchMap, tap } from 'rxjs';
-import type { Observable } from 'rxjs';
+import type { Observable, Subscription } from 'rxjs';
 
 export interface IRxFetchResult {
   loading: Ref<boolean>;
@@ -10,37 +10,40 @@ export interface IRxFetchResult {
 }
 
 export function useRxFetch<T>(getter: () => Observable<T>, title: string) {
-  const loading = ref(false);
-  const handleRefetch = () => subject.next(void 0);
+  const loadingRef = useState(() => false);
+
   const subject = new BehaviorSubject<void>(void 0);
+  const handleRefetch = () => subject.next(void 0);
 
   if (import.meta.client) {
     const toast = useToast();
-    const subscription = subject
-      .pipe(
-        tap(() => (loading.value = true)),
-        switchMap(() =>
-          getter().pipe(
-            finalize(() => (loading.value = false)),
-            catchError((err) => {
-              if (isErrorResult(err)) {
-                if (!err.handled) {
-                  toast.add({ title, description: err.error.message, color: 'error' });
+    let subscription: Subscription | null = null;
+    onMounted(() => {
+      subscription = subject
+        .pipe(
+          tap(() => (loadingRef.value = true)),
+          switchMap(() =>
+            getter().pipe(
+              finalize(() => (loadingRef.value = false)),
+              catchError((err) => {
+                if (isErrorResult(err)) {
+                  if (!err.handled) {
+                    toast.add({ title, description: err.error.message, color: 'error' });
+                  }
+                } else if (err instanceof Error) {
+                  toast.add({ title, description: err.message, color: 'error' });
+                } else {
+                  toast.add({ title, description: 'Unknown error', color: 'error' });
                 }
-              } else if (err instanceof Error) {
-                toast.add({ title, description: err.message, color: 'error' });
-              } else {
-                console.log('title', title);
-                toast.add({ title, description: 'Unknown error', color: 'error' });
-              }
-              return of(null);
-            }),
+                return of(null);
+              }),
+            ),
           ),
-        ),
-      )
-      .subscribe();
-    onUnmounted(() => subscription.unsubscribe());
+        )
+        .subscribe();
+    });
+    onUnmounted(() => subscription?.unsubscribe());
   }
 
-  return [loading, handleRefetch] as const;
+  return [loadingRef, handleRefetch] as const;
 }

@@ -11,39 +11,41 @@ export function useRxEvent<T = Event, R = unknown>(
   const subject = new Subject<T>();
   const handleMutation = (args: T) => subject.next(args);
 
-  const toast = useToast();
-  const subscription = subject
-    .pipe(
-      tap(() => (pending.value = true)),
-      switchMap((event) =>
-        fn(event).pipe(
-          finalize(() => (pending.value = false)),
-          tap((value) => {
-            let description: string | undefined = undefined;
-            if (typeof tipOrFn === 'string') {
-              description = tipOrFn;
-            } else if (typeof tipOrFn === 'function') {
-              description = tipOrFn(value);
-            }
-            toast.add({ title, description, color: 'success' });
-          }),
-          catchError((err) => {
-            if (isErrorResult(err)) {
-              if (!err.handled) {
-                toast.add({ title, description: err.error.message, color: 'error' });
+  if (import.meta.client) {
+    const toast = useToast();
+    const subscription = subject
+      .pipe(
+        tap(() => (pending.value = true)),
+        switchMap((event) =>
+          fn(event).pipe(
+            finalize(() => (pending.value = false)),
+            tap((value) => {
+              let description: string | undefined = undefined;
+              if (typeof tipOrFn === 'string') {
+                description = tipOrFn;
+              } else if (typeof tipOrFn === 'function') {
+                description = tipOrFn(value);
               }
-            } else if (err instanceof Error) {
-              toast.add({ title, description: err.message, color: 'error' });
-            } else {
-              toast.add({ title, description: 'Unknown error', color: 'error' });
-            }
-            return of(null);
-          }),
+              toast.add({ title, description, color: 'success' });
+            }),
+            catchError((err) => {
+              if (isErrorResult(err)) {
+                if (!err.handled) {
+                  toast.add({ title, description: err.error.message, color: 'error' });
+                }
+              } else if (err instanceof Error) {
+                toast.add({ title, description: err.message, color: 'error' });
+              } else {
+                toast.add({ title, description: 'Unknown error', color: 'error' });
+              }
+              return of(null);
+            }),
+          ),
         ),
-      ),
-    )
-    .subscribe();
-  onUnmounted(() => subscription.unsubscribe());
+      )
+      .subscribe();
+    onUnmounted(() => subscription.unsubscribe());
+  }
 
   return [handleMutation, pending] as const;
 }

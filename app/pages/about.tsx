@@ -1,31 +1,44 @@
 import { ServiceLocator } from '@/composables/container';
-import { IHelloService } from '@/sections/client/hello';
+import { IHelloService } from '~/sections/hello';
 import { ClientOnly, UButton } from '#components';
-import { defineComponent, useRxRef, useRxFetch, useRxEvent } from '#imports';
+import { defineComponent, useRxRef, useRxEvent, useAsyncData, http$, watch } from '#imports';
+import { tap } from 'rxjs';
+import { getHello } from '~~/server/sections/hello';
 
 export default defineComponent({
   name: 'AboutPage',
-  setup() {
+  async setup() {
     const service = ServiceLocator.default.get(IHelloService);
+    const { data, error, refresh, status } = await useAsyncData(() => getHello());
+
+    watch(data, (value) => service.set(value ?? ''), { immediate: true });
+
+    if (error.value) return () => <div>Error: {error.value?.message}</div>;
 
     const helloRef = useRxRef(service.$hello, service.hello);
-    const [loadingRef, refetch] = useRxFetch(() => service.load(), 'Load Data');
-    const [mutation, pendingRef] = useRxEvent(() => service.update(helloRef.value), 'Update Data', 'Updated');
+    const [mutation, pendingRef] = useRxEvent(
+      () =>
+        http$<{ hello: string }>({ url: '/api/hello', method: 'POST', body: { hello: helloRef.value } }).pipe(
+          tap((res) => service.set(res.hello)),
+        ),
+      'Update Data',
+      'Updated',
+    );
 
     const handleRefetch = () => {
       service.set('Hello (refetching)');
-      refetch();
+      refresh();
     };
 
     return () => (
       <div class="p-4 w-[50vw] mx-auto flex flex-col gap-4">
         <h1 class="text-2xl box-border">About page</h1>
-        <UButton color="primary" onClick={handleRefetch}>
+        <UButton loading={status.value === 'pending'} color="primary" onClick={handleRefetch}>
           Refetch
         </UButton>
         <ClientOnly>
           <div class="flex flex-row gap-2 items-center">
-            {loadingRef.value ? <p>Loading...</p> : <p>Loaded</p>}
+            {status.value === 'pending' ? <p>Loading...</p> : <p>Loaded</p>}
             {pendingRef.value ? <p>Updating...</p> : <p>Updated</p>}
           </div>
         </ClientOnly>
