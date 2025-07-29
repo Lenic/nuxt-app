@@ -84,7 +84,6 @@ export class Container {
     }
 
     const params = registration.dependencies.map((depToken) => this.get(depToken));
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument -- this is the core code.
     const instance = new registration.constructor(...params);
     this.instances.set(key, instance);
     return instance;
