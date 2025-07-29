@@ -1,6 +1,6 @@
 import { defineNuxtRouteMiddleware } from '#imports';
-import { registerClient } from '~/sections';
+import { registerServices } from '~/sections';
 
 export default defineNuxtRouteMiddleware(() => {
-  registerClient();
+  registerServices();
 });

@@ -1,6 +1,6 @@
 import { register } from '@/composables/container';
 import { HelloService, IHelloService } from './hello';
 
-export function registerClient() {
+export function registerServices() {
   register(IHelloService, HelloService);
 }
