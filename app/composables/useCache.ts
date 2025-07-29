@@ -14,7 +14,7 @@ export function useSingleCache<TItem, TRest extends unknown[]>(callback: (item: 
   };
 }
 
-export function useMultipleCache<TPrefix extends unknown[], TRest extends unknown[]>(
+export function useMultipleCache<TPrefix extends unknown[], TRest extends unknown[] = []>(
   callback: (...args: [...TPrefix, ...TRest]) => void,
 ) {
   const cache = new Map<string, (...args: TRest) => void>();
