@@ -16,12 +16,14 @@ export function useRxRef<T>(
 ) {
   const valueRef = ref<T | undefined>(defaultValue ?? undefined);
 
-  const subscription = stream$.subscribe((value) => {
-    if (!comparator(valueRef.value, value)) {
-      valueRef.value = value;
-    }
-  });
-  onUnmounted(() => subscription.unsubscribe());
+  if (import.meta.client) {
+    const subscription = stream$.subscribe((value) => {
+      if (!comparator(valueRef.value, value)) {
+        valueRef.value = value;
+      }
+    });
+    onUnmounted(() => subscription.unsubscribe());
+  }
 
   return valueRef;
 }

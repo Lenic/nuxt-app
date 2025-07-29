@@ -9,18 +9,6 @@ export default defineComponent({
   name: 'AboutPage',
   async setup() {
     const service = ServiceLocator.default.get(IHelloService);
-    const { data, error, refresh, status } = await useAsyncData(() => {
-      if (import.meta.server) {
-        return getHello();
-      }
-      return http<{ hello: string }, string>({ url: '/api/hello', method: 'GET' }, (stream$) =>
-        stream$.pipe(map((res) => res.hello)),
-      );
-    });
-
-    watch(data, (value) => service.set(value ?? ''), { immediate: true });
-
-    if (error.value) return () => <div>Error: {error.value?.message}</div>;
 
     const helloRef = useRxRef(service.$hello, service.hello);
     const [mutation, pendingRef] = useRxEvent(
@@ -32,11 +20,20 @@ export default defineComponent({
       'Updated',
     );
 
+    const { data, error, refresh, status } = await useAsyncData(() => {
+      if (import.meta.server) {
+        return getHello();
+      }
+      return http<{ hello: string }, string>('/api/hello', (stream$) => stream$.pipe(map((res) => res.hello)));
+    });
+    watch(data, (value) => service.set(value ?? ''), { immediate: true });
+
     const handleRefetch = () => {
       service.set('Hello (refetching)');
       refresh();
     };
 
+    if (error.value) return () => <div>Error: {error.value?.message}</div>;
     return () => (
       <div class="p-4 w-[50vw] mx-auto flex flex-col gap-4">
         <h1 class="text-2xl box-border">About page</h1>
