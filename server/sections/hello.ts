@@ -5,6 +5,6 @@ export function getHello() {
 }
 
 export function setHello(value: string) {
-  hello = value;
+  hello = value.slice(0, 5);
   return Promise.resolve(`${hello} - updated - ${new Date().toISOString()}`);
 }

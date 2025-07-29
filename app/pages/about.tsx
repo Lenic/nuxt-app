@@ -1,15 +1,22 @@
 import { ServiceLocator } from '@/composables/container';
 import { IHelloService } from '~/sections/hello';
 import { ClientOnly, UButton } from '#components';
-import { defineComponent, useRxRef, useRxEvent, useAsyncData, http$, watch } from '#imports';
-import { tap } from 'rxjs';
+import { defineComponent, useRxRef, useRxEvent, useAsyncData, http$, watch, http } from '#imports';
+import { map, tap } from 'rxjs';
 import { getHello } from '~~/server/sections/hello';
 
 export default defineComponent({
   name: 'AboutPage',
   async setup() {
     const service = ServiceLocator.default.get(IHelloService);
-    const { data, error, refresh, status } = await useAsyncData(() => getHello());
+    const { data, error, refresh, status } = await useAsyncData(() => {
+      if (import.meta.server) {
+        return getHello();
+      }
+      return http<{ hello: string }, string>({ url: '/api/hello', method: 'GET' }, (stream$) =>
+        stream$.pipe(map((res) => res.hello)),
+      );
+    });
 
     watch(data, (value) => service.set(value ?? ''), { immediate: true });
 
@@ -43,7 +50,7 @@ export default defineComponent({
           </div>
         </ClientOnly>
         <input type="text" v-model={helloRef.value} />
-        <UButton color="primary" onClick={mutation}>
+        <UButton loading={pendingRef.value} color="primary" onClick={mutation}>
           Update
         </UButton>
       </div>
