@@ -11,22 +11,22 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
-    "@nuxt/eslint": "^1.7.1",
+    "@nuxt/eslint": "^1.9.0",
     "@nuxt/image": "1.10.0",
-    "@nuxt/ui": "^3.3.0",
-    "eslint": "^9.0.0",
-    "nuxt": "^4.0.1",
+    "@nuxt/ui": "^3.3.4",
+    "eslint": "^9.35.0",
+    "nuxt": "^4.1.2",
     "rxjs": "^7.8.2",
-    "tailwindcss": "^4.1.11",
-    "typescript": "^5.6.3",
-    "vue": "^3.5.17",
+    "tailwindcss": "^4.1.13",
+    "typescript": "^5.9.2",
+    "vue": "^3.5.21",
     "vue-router": "^4.5.1"
   },
   "devDependencies": {
-    "@tailwindcss/cli": "^4.1.11",
-    "@tailwindcss/vite": "^4.1.11",
-    "eslint-config-prettier": "^10.1.5",
-    "eslint-plugin-prettier": "^5.5.1",
+    "@tailwindcss/cli": "^4.1.13",
+    "@tailwindcss/vite": "^4.1.13",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.4",
     "prettier": "^3.6.2"
   }
 }
