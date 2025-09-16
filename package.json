@@ -4,13 +4,14 @@
   "type": "module",
   "scripts": {
     "build": "nuxt build",
-    "dev": "nuxt dev --port 3001",
+    "dev": "nuxt dev",
     "dev:inspect": "nuxt dev --inspect --port 3001",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
+    "@auth/core": "^0.40.0",
     "@nuxt/eslint": "^1.9.0",
     "@nuxt/image": "1.10.0",
     "@nuxt/ui": "^3.3.4",
@@ -23,8 +24,11 @@
     "vue-router": "^4.5.1"
   },
   "devDependencies": {
+    "@neondatabase/serverless": "^1.0.1",
     "@tailwindcss/cli": "^4.1.13",
     "@tailwindcss/vite": "^4.1.13",
+    "drizzle-kit": "^0.31.4",
+    "drizzle-orm": "^0.44.5",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.4",
     "prettier": "^3.6.2"
