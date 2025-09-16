@@ -69,8 +69,8 @@ export const useAuth = () => {
   // 登出函数
   const signOut = async () => {
     // 获取 CSRF token
-    const { token } = await $fetch<{ token: string }>('/api/auth/csrf');
-    if (!token) {
+    const { csrfToken } = await $fetch<{ csrfToken: string }>('/api/auth/csrf');
+    if (!csrfToken) {
       console.error('CSRF token not found');
       return;
     }
@@ -81,7 +81,7 @@ export const useAuth = () => {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
       body: new URLSearchParams({
-        csrfToken: token,
+        csrfToken,
         callbackUrl: window.location.origin, // 登出后返回首页
       }),
     });

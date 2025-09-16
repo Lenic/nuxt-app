@@ -26,7 +26,6 @@ export class DrizzleAdapter implements Adapter {
   getUserByAccount = async (
     providerAccountId: Pick<AdapterAccount, 'provider' | 'providerAccountId'>,
   ): Promise<AdapterUser | null> => {
-    console.log('providerAccountId', providerAccountId);
     const data = await this.service.instance
       .select({
         account: accountsTable,
@@ -41,7 +40,6 @@ export class DrizzleAdapter implements Adapter {
         ),
       )
       .limit(1);
-    console.log('data', data);
     return data.length ? (data[0]!.user as AdapterUser) : null;
   };
 
